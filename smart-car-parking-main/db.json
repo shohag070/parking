@@ -1,0 +1,302 @@
+{
+  "settings": {
+    "ratePer30Min": 100,
+    "bkashNumber": "01700-000000",
+    "nagadNumber": "01800-000000"
+  },
+  "slots": [
+    {
+      "id": 1,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0,
+      "guestKey": null,
+      "historyId": null
+    },
+    {
+      "id": 2,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0,
+      "guestKey": null,
+      "historyId": null
+    },
+    {
+      "id": 3,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 4,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 5,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 6,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 7,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 8,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 9,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 10,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 11,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    },
+    {
+      "id": 12,
+      "status": "free",
+      "ownerType": null,
+      "userId": null,
+      "guestToken": null,
+      "vehicleNo": null,
+      "entryTime": null,
+      "durationMin": null,
+      "expiryTime": null,
+      "finePaid": 0
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Numan",
+      "phone": "22222",
+      "password": "222222",
+      "balance": 0,
+      "isAdmin": true
+    },
+    {
+      "id": 2,
+      "name": "nayon",
+      "phone": "55555",
+      "password": "111111",
+      "balance": 0
+    }
+  ],
+  "history": [
+    {
+      "id": 1,
+      "slotId": 1,
+      "vehicleNo": "DHAKA METRO K 1204",
+      "userId": null,
+      "ownerType": "guest",
+      "bookedMin": 30,
+      "entryTime": 1793629349864,
+      "expiryTime": 1793631149864,
+      "exitTime": 1793629535549,
+      "status": "exited",
+      "bookingAmount": 100,
+      "bookingMethod": "bkash",
+      "finePaid": 0,
+      "overtimeMin": 0,
+      "payments": [
+        {
+          "kind": "booking",
+          "amount": 100,
+          "method": "bkash",
+          "trxId": "TXB7CB79FA",
+          "at": 1793629349864
+        }
+      ],
+      "events": [
+        {
+          "type": "entry",
+          "at": 1793629349864,
+          "text": "Booked slot 1 for 30 min"
+        },
+        {
+          "type": "exit",
+          "at": 1793629535549,
+          "text": "Exited slot 1 after 3 min"
+        }
+      ],
+      "parkedMin": 3
+    },
+    {
+      "id": 2,
+      "slotId": 2,
+      "vehicleNo": "DHAKA 1",
+      "userId": null,
+      "ownerType": "guest",
+      "bookedMin": 1,
+      "entryTime": 1793644712196,
+      "expiryTime": 1793644772196,
+      "exitTime": 1793644813544,
+      "status": "exited",
+      "bookingAmount": 100,
+      "bookingMethod": "nagad",
+      "finePaid": 100,
+      "overtimeMin": 1,
+      "payments": [
+        {
+          "kind": "booking",
+          "amount": 100,
+          "method": "nagad",
+          "trxId": "TXA9EA8A31",
+          "at": 1793644712196
+        },
+        {
+          "kind": "fine",
+          "amount": 100,
+          "method": "nagad",
+          "trxId": "TX61A9A216",
+          "at": 1793644810034
+        }
+      ],
+      "events": [
+        {
+          "type": "entry",
+          "at": 1793644712196,
+          "text": "Booked slot 2 for 1 min"
+        },
+        {
+          "type": "fine",
+          "at": 1793644810034,
+          "text": "Overtime fine paid: 100 Tk via nagad"
+        },
+        {
+          "type": "exit",
+          "at": 1793644813544,
+          "text": "Exited slot 2 after 2 min"
+        }
+      ],
+      "parkedMin": 2
+    },
+    {
+      "id": 3,
+      "slotId": 1,
+      "vehicleNo": "DHAKA 2",
+      "userId": null,
+      "ownerType": "guest",
+      "bookedMin": 30,
+      "entryTime": 1793644746060,
+      "expiryTime": 1793646546060,
+      "exitTime": 1793644771937,
+      "status": "exited",
+      "bookingAmount": 100,
+      "bookingMethod": "bkash",
+      "finePaid": 0,
+      "overtimeMin": 0,
+      "payments": [
+        {
+          "kind": "booking",
+          "amount": 100,
+          "method": "bkash",
+          "trxId": "TX38C8E34A",
+          "at": 1793644746060
+        }
+      ],
+      "events": [
+        {
+          "type": "entry",
+          "at": 1793644746060,
+          "text": "Booked slot 1 for 30 min"
+        },
+        {
+          "type": "exit",
+          "at": 1793644771937,
+          "text": "Exited slot 1 after 0 min"
+        }
+      ],
+      "parkedMin": 0
+    }
+  ]
+}

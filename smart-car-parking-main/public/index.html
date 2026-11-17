@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartPark — Smart Car Parking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --ink:#0c0a1d; --ink2:#141130; --plum:#241a4f; --violet:#7b5cff; --rose:#ff6f9c;
+  --gold:#e9c98d; --gold2:#b98a3e; --text:#f3eefc; --muted:#a49fc4;
+  --ok:#3ddc97; --bad:#ff5f7a; --warn:#ffb84d;
+  --bkash:#e2136e; --nagad:#f6921e;
+  --glass:rgba(255,255,255,.055); --line:rgba(255,255,255,.12);
+  --serif:'Fraunces',Georgia,serif; --sans:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);background:var(--ink);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;color:inherit}
+input{font-family:inherit}
+.hidden{display:none!important}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ================= AUTH ================= */
+.auth{position:fixed;inset:0;overflow:auto;background:radial-gradient(1200px 700px at 78% -10%,#2b1d63 0%,transparent 60%),radial-gradient(900px 600px at -10% 110%,#3a1747 0%,transparent 55%),var(--ink)}
+.auth .bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;animation:drift 18s ease-in-out infinite}
+.b1{width:420px;height:420px;background:var(--violet);top:-120px;right:8%}
+.b2{width:360px;height:360px;background:var(--rose);bottom:-140px;left:12%;animation-delay:-6s;opacity:.35}
+.b3{width:280px;height:280px;background:var(--gold2);top:40%;left:38%;animation-delay:-11s;opacity:.22}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-30px) scale(1.08)}66%{transform:translate(-30px,30px) scale(.94)}}
+.gridlines{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 75%)}
+.road{position:absolute;left:0;right:0;bottom:0;height:86px;background:linear-gradient(#0000,#07061399 40%);border-top:1px solid rgba(255,255,255,.06)}
+.road::before{content:"";position:absolute;left:0;right:0;top:50px;height:3px;background:repeating-linear-gradient(90deg,rgba(233,201,141,.55) 0 46px,transparent 46px 96px);animation:dash 1.4s linear infinite}
+@keyframes dash{to{background-position:-96px 0}}
+.car{position:absolute;bottom:34px;left:-180px;width:120px;animation:drive 11s cubic-bezier(.4,.1,.3,1) infinite;filter:drop-shadow(0 8px 14px #0008)}
+.car::after{content:"";position:absolute;right:-120px;top:14px;width:130px;height:18px;background:linear-gradient(90deg,rgba(255,232,170,.5),transparent);clip-path:polygon(0 30%,100% 0,100% 100%,0 70%);filter:blur(2px)}
+@keyframes drive{0%{transform:translateX(0) scaleX(-1)}70%,100%{transform:translateX(calc(100vw + 340px)) scaleX(-1)}}
+.auth-inner{position:relative;z-index:2;min-height:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;max-width:1120px;margin:0 auto;padding:40px 28px 120px}
+.hero .logo{display:flex;align-items:center;gap:14px;margin-bottom:34px}
+.mark{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font:700 26px var(--serif);color:#1b1230;background:linear-gradient(135deg,#f6e2b3,var(--gold2));position:relative;box-shadow:0 10px 30px #b98a3e55}
+.mark::before{content:"";position:absolute;inset:-3px;border-radius:19px;background:conic-gradient(from 0deg,transparent,var(--gold),transparent 40%);z-index:-1;animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo b{font:700 22px var(--serif);letter-spacing:.2px}
+.hero h1{font:700 clamp(38px,5.4vw,66px)/1.02 var(--serif);letter-spacing:-1.5px;margin-bottom:18px}
+.hero h1 em{font-style:normal;background:linear-gradient(100deg,#fff2cf,var(--gold) 40%,var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:sheen 6s ease-in-out infinite}
+@keyframes sheen{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+.hero p{color:var(--muted);font-size:17px;line-height:1.6;max-width:460px;margin-bottom:26px}
+.perks{display:flex;flex-wrap:wrap;gap:10px}
+.perks span{padding:9px 14px;border-radius:99px;background:var(--glass);border:1px solid var(--line);font-size:13px;font-weight:600;color:#ddd6f7;backdrop-filter:blur(8px)}
+.perks i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:8px;box-shadow:0 0 0 0 #3ddc9788;animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px #3ddc9700}100%{box-shadow:0 0 0 0 #3ddc9700}}
+.card{position:relative;padding:34px 30px 28px;border-radius:26px;background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.035));border:1px solid var(--line);backdrop-filter:blur(22px);box-shadow:0 30px 80px #0009,inset 0 1px 0 rgba(255,255,255,.14);transition:transform .15s ease-out;transform-style:preserve-3d;animation:cardIn .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(.97)}}
+.card::before{content:"";position:absolute;inset:0;border-radius:26px;padding:1px;background:linear-gradient(140deg,rgba(233,201,141,.7),transparent 35%,transparent 65%,rgba(123,92,255,.6));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;border-radius:14px;background:rgba(0,0,0,.28);margin-bottom:26px}
+.tabs button{position:relative;z-index:1;padding:11px;border:0;background:none;font-weight:700;font-size:14px;color:var(--muted);transition:color .25s}
+.tabs button.on{color:#1b1230}
+.tabs .pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:11px;background:linear-gradient(135deg,#f6e2b3,var(--gold));transition:transform .35s cubic-bezier(.3,1.2,.4,1)}
+.tabs.reg .pill{transform:translateX(100%)}
+.card h2{font:700 26px var(--serif);margin-bottom:6px}
+.card .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+.field{position:relative;margin-bottom:16px}
+.field input{width:100%;padding:22px 16px 8px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);font-size:15px;transition:border-color .2s,box-shadow .2s,background .2s}
+.field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(233,201,141,.14);background:rgba(0,0,0,.4)}
+.field label{position:absolute;left:16px;top:17px;font-size:14px;color:var(--muted);pointer-events:none;transition:all .2s}
+.field input:focus+label,.field input:not(:placeholder-shown)+label{top:7px;font-size:11px;color:var(--gold)}
+.btn{position:relative;width:100%;padding:15px 18px;border-radius:14px;border:0;font-weight:800;font-size:15px;overflow:hidden;transition:transform .15s,box-shadow .2s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.gold{color:#1b1230;background:linear-gradient(135deg,#f8e6b8,var(--gold) 45%,var(--gold2));box-shadow:0 12px 30px #b98a3e44}
+.btn.gold:hover{box-shadow:0 16px 38px #b98a3e77}
+.btn.gold::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.65),transparent);transform:skewX(-20deg);animation:shimmer 3.2s ease-in-out infinite}
+@keyframes shimmer{0%,55%{left:-60%}100%{left:130%}}
+.btn.ghost{background:var(--glass);border:1px solid var(--line);color:var(--text)}
+.btn.ghost:hover{background:rgba(255,255,255,.1)}
+.btn.loading{pointer-events:none;opacity:.8}
+.btn.loading::before{content:"";display:inline-block;width:14px;height:14px;border:2px solid #1b123055;border-top-color:#1b1230;border-radius:50%;margin-right:10px;vertical-align:-2px;animation:spin .7s linear infinite}
+.linkbtn{background:none;border:0;color:var(--gold);font-size:13px;font-weight:700;padding:6px 0}
+.linkbtn:hover{text-decoration:underline}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:16px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.between{display:flex;justify-content:flex-end;margin:-6px 0 14px}
+.form{animation:fadeSwap .45s ease both}
+@keyframes fadeSwap{from{opacity:0;transform:translateX(14px)}}
+
+/* ================= APP ================= */
+.app{min-height:100%;background:radial-gradient(900px 500px at 85% -10%,#2a1c60 0%,transparent 60%),var(--ink)}
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;padding:14px 24px;background:rgba(12,10,29,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header .logo{display:flex;align-items:center;gap:10px;font:700 19px var(--serif)}
+header .mark{width:36px;height:36px;font-size:18px;border-radius:11px}
+header .mark::before{display:none}
+nav.tabsnav{display:flex;gap:4px;margin-left:18px}
+nav.tabsnav button{padding:9px 16px;border-radius:10px;border:0;background:none;font-weight:700;font-size:14px;color:var(--muted)}
+nav.tabsnav button.on{background:var(--glass);color:var(--gold);box-shadow:inset 0 0 0 1px var(--line)}
+.who{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:14px}
+.who .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--rose));display:grid;place-items:center;font-weight:800}
+.who .btn{width:auto;padding:9px 16px;font-size:13px}
+main{max-width:1040px;margin:0 auto;padding:30px 22px 80px}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.pagehead h2{font:700 30px var(--serif);letter-spacing:-.5px}
+.pagehead p{color:var(--muted);font-size:14px;margin-top:4px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.slot{position:relative;text-align:left;padding:16px;min-height:140px;border-radius:20px;border:1px solid var(--line);background:var(--glass);display:flex;flex-direction:column;gap:6px;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s}
+.slot .num{font:700 40px var(--serif);line-height:1}
+.slot .st{font-size:12px;font-weight:800;color:var(--muted)}
+.slot .tmr{margin-top:auto;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.slot .ico{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:800 15px var(--sans);color:#fff;box-shadow:0 6px 14px #0005;transform:rotate(8deg)}
+.slot .ico svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.slot.free{border-color:rgba(61,220,151,.5);background:linear-gradient(160deg,rgba(61,220,151,.26),rgba(15,174,122,.05) 70%);box-shadow:0 10px 26px rgba(61,220,151,.10)}
+.slot.free .ico{background:linear-gradient(135deg,#25c98a,#0f9d6b)}
+.slot.free .st{color:var(--ok)}
+.slot.free:hover{transform:translateY(-5px) rotate(-.6deg);box-shadow:0 18px 38px #3ddc9736;border-color:var(--ok)}
+.slot.free::after{content:"Book";position:absolute;right:14px;bottom:14px;font-size:12px;font-weight:800;color:#0c2b1e;background:var(--ok);padding:5px 12px;border-radius:99px}
+.slot.occupied{border-color:rgba(255,111,156,.35);background:linear-gradient(160deg,rgba(255,111,156,.2),rgba(123,92,255,.12) 75%);cursor:default}
+.slot.occupied .ico{background:linear-gradient(135deg,#ff6f9c,#7b5cff)}
+.slot.occupied .st{color:#ffb3c9}
+.slot.occupied:has(.tmr.over){border-color:var(--bad);animation:alert 2s ease-in-out infinite}
+@keyframes alert{50%{box-shadow:0 0 0 3px rgba(255,95,122,.25),0 0 30px rgba(255,95,122,.25)}}
+.slot.held{border-color:rgba(255,184,77,.6);background:linear-gradient(160deg,rgba(255,184,77,.22),rgba(255,184,77,.05));cursor:not-allowed}
+.slot.held .ico{background:linear-gradient(135deg,#ffb84d,#ff8a3d);animation:pulse2 1.2s infinite}
+.slot.held .st{color:var(--warn)}
+@keyframes pulse2{50%{opacity:.45}}
+.tmr.over{color:var(--bad)}
+.mine{margin-bottom:30px}
+.mine h3,.sect h3{font:700 19px var(--serif);margin-bottom:12px}
+.minegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.mcard{padding:18px;border-radius:18px;background:linear-gradient(160deg,rgba(233,201,141,.13),rgba(233,201,141,.03));border:1px solid rgba(233,201,141,.35)}
+.mcard .r1{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.mcard .r1 b{font:700 22px var(--serif)}
+.mcard .veh{font-size:13px;color:var(--muted)}
+.mcard .big{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;margin:8px 0 2px}
+.mcard .fine{color:var(--bad);font-weight:800;font-size:14px;min-height:20px}
+.mcard code,.codebig{font-family:ui-monospace,'SF Mono',Consolas,monospace}
+.mcard .cd{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding:9px 12px;border-radius:10px;background:rgba(0,0,0,.3);font-size:13px}
+.mcard .cd code{letter-spacing:2px;font-weight:700;color:var(--gold)}
+.mcard .btn{margin-top:12px;padding:11px;font-size:14px}
+.glass{padding:24px;border-radius:22px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px)}
+.codeRow{display:flex;gap:10px;margin:16px 0}
+.codeRow input{flex:1;padding:16px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--gold);font:700 22px ui-monospace,Consolas,monospace;letter-spacing:5px;text-transform:uppercase;text-align:center}
+.codeRow input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(233,201,141,.14)}
+.codeRow .btn{width:auto;padding:0 26px}
+.info .row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+.info .row span{color:var(--muted)}
+.info .row b.over{color:var(--bad)}
+.info .btn{margin-top:18px}
+.note{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ---- app background blobs ---- */
+.app::before,.app::after{content:"";position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;animation:drift 20s ease-in-out infinite}
+.app::before{width:420px;height:420px;background:#7b5cff;opacity:.28;top:80px;right:-120px}
+.app::after{width:380px;height:380px;background:#ff6f9c;opacity:.16;bottom:-120px;left:-100px;animation-delay:-8s}
+main{position:relative;z-index:1}
+@keyframes bob{50%{translate:0 -6px}}
+
+/* ---- banner with stickers ---- */
+.banner{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px 30px;border-radius:26px;margin-bottom:16px;background:linear-gradient(120deg,#4b2fd0 0%,#8a3fd6 45%,#e0567f 100%);box-shadow:0 24px 60px #4b2fd066,inset 0 1px 0 rgba(255,255,255,.25)}
+.banner::before{content:"";position:absolute;inset:0;background:radial-gradient(400px 200px at 80% -20%,rgba(255,255,255,.28),transparent 60%),repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 2px,transparent 2px 18px)}
+.banner::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:30%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-20deg);animation:shimmer 5s ease-in-out infinite}
+.bn-text{position:relative;z-index:1;max-width:460px}
+.bn-text h2{font:700 36px/1.05 var(--serif);letter-spacing:-.8px;margin-bottom:8px}
+.bn-text p{font-size:14px;line-height:1.55;color:#f0e8ff}
+.stickers{position:relative;z-index:1;display:flex;gap:16px;align-items:center;flex-shrink:0}
+.s-rate{width:108px;height:108px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff3cf,var(--gold) 55%,var(--gold2));color:#2a1a05;display:grid;place-items:center;text-align:center;rotate:-10deg;border:3px dashed rgba(42,26,5,.4);outline:4px solid rgba(255,255,255,.4);box-shadow:0 14px 28px #0006;animation:bob 4s ease-in-out infinite}
+.s-rate b{display:block;font:700 32px/1 var(--serif)}
+.s-rate small{display:block;font-size:11px;font-weight:800;margin-top:2px}
+.s-qr{padding:11px 15px;border-radius:14px;background:#fff;color:#20103d;font-weight:800;font-size:13px;line-height:1.5;rotate:6deg;box-shadow:0 12px 26px #0005;animation:bob 5s -1.5s ease-in-out infinite}
+.s-qr .b{color:var(--bkash)}.s-qr .n{color:var(--nagad)}
+.s-live{position:absolute;top:-6px;right:-4px;padding:5px 12px;border-radius:99px;background:#0c0a1d;color:#fff;font-size:12px;font-weight:800;box-shadow:0 6px 14px #0006}
+.s-live i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px;animation:pulse 2s infinite}
+
+/* ---- stat boxes ---- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.stat{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:20px;color:#fff;box-shadow:0 16px 34px var(--sh);transition:transform .25s}
+.stat:hover{transform:translateY(-3px)}
+.stat::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.14)}
+.stat .ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.22);display:grid;place-items:center;flex-shrink:0;animation:bob 3.2s ease-in-out infinite}
+.stat .ic svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.stat b{display:block;font:700 36px/1 var(--serif);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;font-weight:700;opacity:.95}
+.st-total{background:linear-gradient(135deg,#5b3df0,#8f6bff);--sh:#5b3df055}
+.st-free{background:linear-gradient(135deg,#0a9a6b,#25c98a);--sh:#1bc98a44}
+.st-busy{background:linear-gradient(135deg,#e2456b,#ff8a5c);--sh:#ff5f7a44}
+.occ{display:flex;align-items:center;gap:12px;margin-bottom:26px;font-size:13px;color:var(--muted);font-weight:700}
+.occ .bar{flex:1;height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.occ .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--ok),var(--warn),var(--bad));transition:width .8s cubic-bezier(.2,.8,.2,1)}
+
+/* ---- exit page ---- */
+.exitcard{max-width:560px}
+.two{display:grid;grid-template-columns:120px 1fr;gap:12px;margin:4px 0 14px}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.fld input{width:100%;padding:15px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--gold);font:700 22px ui-monospace,Consolas,monospace;text-align:center;letter-spacing:4px;text-transform:uppercase}
+.fld input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(233,201,141,.14)}
+.fine.has{color:var(--bad)}
+.fine.none{color:var(--ok)}
+.slide{position:relative;height:62px;margin-top:22px;border-radius:99px;background:rgba(0,0,0,.35);border:1px solid rgba(233,201,141,.45);overflow:hidden;user-select:none;touch-action:none}
+.slide-fill{position:absolute;left:0;top:0;bottom:0;width:58px;border-radius:99px;background:linear-gradient(90deg,#b98a3e,#e9c98d)}
+.slide-label{position:absolute;inset:0;display:grid;place-items:center;padding-left:50px;font-weight:800;font-size:14px;letter-spacing:.3px;color:transparent;background:linear-gradient(100deg,#8b83b5 30%,#fff 50%,#8b83b5 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;animation:txt 2.6s linear infinite}
+@keyframes txt{to{background-position:-200% 0}}
+.knob{position:absolute;left:4px;top:4px;width:52px;height:52px;border-radius:50%;border:0;display:grid;place-items:center;background:linear-gradient(135deg,#fff3cf,var(--gold));color:#2a1a05;box-shadow:0 6px 18px #0007;cursor:grab;touch-action:none;z-index:2}
+.knob svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.slide:not(.drag) .knob{transition:transform .35s cubic-bezier(.3,1.3,.5,1)}
+.slide:not(.drag) .slide-fill{transition:width .35s cubic-bezier(.3,1.3,.5,1)}
+.slide.done .knob{cursor:default}
+
+@media(max-width:700px){
+  .banner{flex-direction:column;align-items:flex-start}
+  .stats{grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .stat{flex-direction:column;align-items:flex-start;padding:14px;gap:8px}
+  .stat b{font-size:28px}
+  .two{grid-template-columns:90px 1fr}
+}
+
+/* ================= MODAL ================= */
+.modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;background:rgba(5,4,14,.72);backdrop-filter:blur(8px);animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.sheet{position:relative;width:100%;max-width:440px;max-height:94vh;overflow:auto;padding:28px 26px;border-radius:26px;background:linear-gradient(170deg,#1d1745,#120f2b);border:1px solid var(--line);box-shadow:0 40px 100px #000a;animation:pop .35s cubic-bezier(.2,1.2,.4,1)}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.95)}}
+.sheet h3{font:700 24px var(--serif);margin-bottom:4px}
+.sheet .x{position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;border:0;background:var(--glass);font-size:20px;line-height:1;color:var(--muted)}
+.sheet .x:hover{background:rgba(255,255,255,.12);color:#fff}
+.sheet label.l{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:18px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:var(--glass);font-size:13px;font-weight:700}
+.chip.on{background:var(--gold);color:#1b1230;border-color:var(--gold)}
+.sheet input.plain{width:100%;margin-top:10px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--text);font-size:15px}
+.sheet input.plain:focus{outline:none;border-color:var(--gold)}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.28)}
+.total b{font:700 26px var(--serif);color:var(--gold)}
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.methods.m3{grid-template-columns:1fr 1fr 1fr}
+.mcd{padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--glass);text-align:center;font-weight:800;font-size:16px;transition:all .2s}
+.mcd[data-m=bkash].on{border-color:var(--bkash);background:#e2136e26;box-shadow:0 0 0 4px #e2136e1f}
+.mcd[data-m=nagad].on{border-color:var(--nagad);background:#f6921e24;box-shadow:0 0 0 4px #f6921e1f}
+.mcd[data-m=wallet].on{border-color:var(--gold);background:#e9c98d26;box-shadow:0 0 0 4px #e9c98d1f}
+
+/* ---- wallet ---- */
+.wbadge{padding:7px 13px;border-radius:99px;background:var(--glass);border:1px solid rgba(233,201,141,.5);color:var(--gold);font-weight:800;font-size:13px}
+.walletcard{max-width:420px}
+.wbal{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-bottom:18px}
+.wbal span{color:var(--muted);font-size:13px;font-weight:700}
+.wbal b{font:700 42px var(--serif);color:var(--gold)}
+.mcd small{display:block;font-weight:500;font-size:11px;color:var(--muted);margin-top:2px}
+.sheet .btn{margin-top:20px}
+.hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+.demo{margin-top:14px;font-size:11px;text-align:center;color:var(--muted);opacity:.8}
+
+.qrhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-right:34px}
+.badge{padding:6px 14px;border-radius:99px;font-weight:800;font-size:14px;color:#fff;background:var(--mc)}
+.qrbox{--mc:#e2136e;position:relative;width:236px;margin:6px auto 16px;padding:14px;border-radius:22px;background:#fff;box-shadow:0 0 0 4px var(--mc),0 20px 50px color-mix(in srgb,var(--mc) 45%,transparent);animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 4px var(--mc),0 20px 70px color-mix(in srgb,var(--mc) 70%,transparent)}}
+.qrbox .qrc{width:208px;height:208px;display:grid;place-items:center;animation:qrin .7s cubic-bezier(.2,1,.3,1) both}
+@keyframes qrin{from{opacity:0;transform:scale(.6) rotate(-6deg);filter:blur(8px)}}
+.qrbox .qrc img,.qrbox .qrc canvas{max-width:100%}
+.scanline{position:absolute;left:10px;right:10px;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--mc),transparent);box-shadow:0 0 14px var(--mc);animation:scan 2.2s ease-in-out infinite}
+@keyframes scan{0%,100%{top:14px}50%{top:calc(100% - 17px)}}
+.corner{position:absolute;width:22px;height:22px;border:3px solid var(--mc)}
+.corner.a{top:6px;left:6px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.corner.b{top:6px;right:6px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.corner.c{bottom:6px;left:6px;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.corner.d{bottom:6px;right:6px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.qrmeta{border-radius:14px;background:rgba(0,0,0,.28);padding:6px 14px}
+.qrmeta div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;font-size:13px;border-bottom:1px solid var(--line)}
+.qrmeta div:last-child{border:0}
+.qrmeta span{color:var(--muted)}
+.qrmeta b{text-align:right}
+.qrmeta .amt{font:700 22px var(--serif);color:var(--gold)}
+.timer{text-align:center;font-size:13px;color:var(--muted);margin-top:12px}
+.timer b{color:var(--warn);font-variant-numeric:tabular-nums}
+.center{text-align:center}
+.spin{width:64px;height:64px;margin:26px auto 16px;border-radius:50%;border:5px solid rgba(255,255,255,.1);border-top-color:var(--mc,var(--gold));animation:spin .8s linear infinite}
+.tick{width:84px;height:84px;margin:20px auto 14px}
+.tick circle{fill:none;stroke:var(--ok);stroke-width:4;stroke-dasharray:190;stroke-dashoffset:190;animation:draw .6s ease forwards}
+.tick path{fill:none;stroke:var(--ok);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:50;stroke-dashoffset:50;animation:draw .4s .5s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.ticket{margin:16px 0;padding:18px;border-radius:18px;text-align:center;background:linear-gradient(160deg,rgba(233,201,141,.18),rgba(233,201,141,.04));border:1px dashed rgba(233,201,141,.6)}
+.ticket small{color:var(--muted);font-size:12px}
+.codebig{display:block;font-size:34px;font-weight:800;letter-spacing:7px;color:var(--gold);margin:6px 0 10px;animation:reveal .8s .2s both}
+@keyframes reveal{from{opacity:0;letter-spacing:22px;filter:blur(6px)}}
+.gate{position:relative;width:200px;height:90px;margin:22px auto 6px}
+.gate .post{position:absolute;left:10px;bottom:0;width:22px;height:60px;border-radius:6px;background:linear-gradient(#f3eefc,#b8b0d8)}
+.gate .arm{position:absolute;left:24px;bottom:44px;width:160px;height:12px;border-radius:6px;transform-origin:0 50%;background:repeating-linear-gradient(90deg,#ff5f7a 0 20px,#fff 20px 40px);animation:lift 1.1s .3s cubic-bezier(.3,1.3,.5,1) forwards}
+@keyframes lift{to{transform:rotate(-72deg)}}
+.err{margin-top:12px;font-size:13px;color:var(--bad);min-height:18px}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);z-index:200;max-width:92vw;padding:13px 20px;border-radius:14px;background:#2a2150;border:1px solid var(--line);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 14px 40px #000a}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.bad{border-color:var(--bad)}
+.toast.ok{border-color:var(--ok)}
+
+/* ---- Robo assistant ---- */
+.robo-fab{position:fixed;right:22px;bottom:22px;z-index:150;width:58px;height:58px;border-radius:50%;border:0;display:grid;place-items:center;background:linear-gradient(135deg,#f8e6b8,var(--gold) 45%,var(--gold2));color:#1b1230;box-shadow:0 14px 34px #b98a3e55;animation:bob 3.4s ease-in-out infinite;transition:box-shadow .2s,transform .15s}
+.robo-fab:hover{box-shadow:0 18px 42px #b98a3e77}
+.robo-fab:active{transform:scale(.94)}
+.robo-fab svg{width:32px;height:32px}
+.robo-panel{position:fixed;right:22px;bottom:92px;z-index:150;width:340px;max-width:calc(100vw - 32px);max-height:min(560px,72vh);display:flex;flex-direction:column;border-radius:22px;background:linear-gradient(170deg,#1d1745,#120f2b);border:1px solid var(--line);box-shadow:0 30px 80px #000a;overflow:hidden;animation:pop .3s cubic-bezier(.2,1.2,.4,1)}
+.robo-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 14px 14px 16px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.22);flex-shrink:0}
+.robo-title{display:flex;align-items:center;gap:10px;min-width:0}
+.robo-avatar{flex-shrink:0;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#f6e2b3,var(--gold2));display:grid;place-items:center;color:#1b1230}
+.robo-avatar svg{width:21px;height:21px}
+.robo-title b{display:block;font:700 15px var(--serif)}
+.robo-title small{display:block;color:var(--muted);font-size:11px}
+.robo-head .x{position:static;width:30px;height:30px;flex-shrink:0}
+.robo-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.robo-msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.55;white-space:pre-wrap}
+.robo-msg.bot{align-self:flex-start;background:var(--glass);border:1px solid var(--line);border-bottom-left-radius:4px}
+.robo-msg.user{align-self:flex-end;background:linear-gradient(135deg,#f6e2b3,var(--gold));color:#1b1230;font-weight:600;border-bottom-right-radius:4px}
+.robo-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px;flex-shrink:0}
+.robo-chips .chip{font-size:11.5px;padding:7px 11px}
+.robo-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);flex-shrink:0}
+.robo-row input{flex:1;min-width:0;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--text);font-size:13.5px}
+.robo-row input:focus{outline:none;border-color:var(--gold)}
+.robo-row .btn{width:auto;padding:0 18px;font-size:13px}
+@media(max-width:480px){.robo-panel{right:12px;left:12px;width:auto;bottom:82px}.robo-fab{right:16px;bottom:16px}}
+
+/* ---- history ---- */
+.hsearch{width:100%;margin-bottom:16px;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--text);font-size:15px}
+.hsearch:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(233,201,141,.14)}
+.hlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.hcar{text-align:left;padding:16px 18px;border-radius:18px;border:1px solid var(--line);background:var(--glass);display:flex;flex-direction:column;gap:8px;transition:transform .2s,border-color .2s,box-shadow .2s}
+.hcar:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 14px 30px #0006}
+.hcar .plate{font:800 17px ui-monospace,'SF Mono',Consolas,monospace;letter-spacing:1px;color:var(--gold);word-break:break-word}
+.hcar .meta{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted)}
+.hcar .meta b{color:var(--text);font-weight:700}
+.pill2{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;width:fit-content}
+.pill2.in{background:rgba(255,111,156,.18);color:#ffb3c9;border:1px solid rgba(255,111,156,.4)}
+.pill2.out{background:rgba(61,220,151,.14);color:var(--ok);border:1px solid rgba(61,220,151,.35)}
+.pill2.fine{background:rgba(255,95,122,.16);color:var(--bad);border:1px solid rgba(255,95,122,.4);margin-left:6px}
+.sheet.wide{max-width:580px}
+.visit{margin-top:14px;padding:16px;border-radius:16px;background:rgba(0,0,0,.26);border:1px solid var(--line)}
+.visit .vh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+.visit .vh b{font:700 17px var(--serif)}
+.visit .row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.visit .row span{color:var(--muted)}
+.visit .row b{text-align:right}
+.visit .row b.bad{color:var(--bad)}
+.visit .row b.ok{color:var(--ok)}
+.tl{margin-top:8px;padding-left:14px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+.tl div b{color:var(--text);font-weight:600}
+.empty{padding:34px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
+.robo-msg.think{color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH ================= -->
+<div id="auth" class="auth hidden">
+  <div class="bg">
+    <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+    <div class="gridlines"></div>
+    <div class="road"></div>
+    <svg class="car" viewBox="0 0 120 50" aria-hidden="true">
+      <defs><linearGradient id="cg" x1="0" x2="1"><stop offset="0" stop-color="#f6e2b3"/><stop offset="1" stop-color="#b98a3e"/></linearGradient></defs>
+      <path d="M6 36 L12 24 Q16 17 25 17 L50 17 Q58 6 74 6 L90 6 Q100 9 106 21 L113 25 Q117 28 117 35 L117 39 L6 39 Z" fill="url(#cg)"/>
+      <path d="M56 17 Q62 10 74 10 L88 10 Q94 12 98 20 L56 20 Z" fill="#1b1230" opacity=".78"/>
+      <circle cx="32" cy="40" r="8" fill="#0c0a1d" stroke="#f3eefc" stroke-width="2"/><circle cx="92" cy="40" r="8" fill="#0c0a1d" stroke="#f3eefc" stroke-width="2"/>
+      <rect x="110" y="27" width="6" height="4" rx="2" fill="#fff6d0"/>
+    </svg>
+  </div>
+
+  <div class="auth-inner">
+    <section class="hero">
+      <div class="logo"><div class="mark">P</div><b>SmartPark</b></div>
+      <h1>Your spot is waiting.<br><em>Book it in seconds.</em></h1>
+      <p>Pick a slot, pay with a bKash or Nagad QR, and get your exit code instantly. No queues, no paper tickets.</p>
+      <div class="perks"><span><i></i>Live slot status</span><span>Pay by QR</span><span>Secured by vehicle number</span></div>
+    </section>
+
+    <section class="card" id="authCard">
+      <div class="tabs" id="authTabs"><span class="pill"></span><button class="on" data-a="login">Sign in</button><button data-a="register">Create account</button></div>
+
+      <form class="form" id="fLogin" autocomplete="on">
+        <h2>Welcome back</h2><p class="sub">Sign in to book and manage your parking.</p>
+        <div class="field"><input id="lPhone" placeholder=" " autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" inputmode="tel"><label for="lPhone">Phone number</label></div>
+        <div class="field"><input id="lPass" type="password" placeholder=" " autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"><label for="lPass">Password</label></div>
+        <div class="between"><button type="button" class="linkbtn" id="goReset">Forgot password?</button></div>
+        <button class="btn gold" id="bLogin" type="submit">Sign in</button>
+        <div class="or">or</div>
+        <button class="btn ghost guestBtn" type="button">Continue as guest</button>
+      </form>
+
+      <form class="form hidden" id="fReg" autocomplete="on">
+        <h2>Create your account</h2><p class="sub">Track your parking and fines in one place.</p>
+        <div class="field"><input id="rName" placeholder=" " autocomplete="name"><label for="rName">Full name</label></div>
+        <div class="field"><input id="rPhone" placeholder=" " autocomplete="tel" inputmode="tel"><label for="rPhone">Phone number</label></div>
+        <div class="field"><input id="rPass" type="password" placeholder=" " autocomplete="new-password"><label for="rPass">Password (min 6 characters)</label></div>
+        <button class="btn gold" id="bReg" type="submit">Create account</button>
+        <div class="or">or</div>
+        <button class="btn ghost guestBtn" type="button">Continue as guest</button>
+      </form>
+
+      <form class="form hidden" id="fReset">
+        <h2>Reset password</h2><p class="sub">Enter your registered phone number and a new password.</p>
+        <div class="field"><input id="pPhone" placeholder=" " inputmode="tel"><label for="pPhone">Registered phone number</label></div>
+        <div class="field"><input id="pPass" type="password" placeholder=" " autocomplete="new-password"><label for="pPass">New password (min 6 characters)</label></div>
+        <button class="btn gold" id="bReset" type="submit">Reset password</button>
+        <div class="between" style="margin:12px 0 0;justify-content:center"><button type="button" class="linkbtn" id="backLogin">Back to sign in</button></div>
+      </form>
+    </section>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="app hidden">
+  <header class="top">
+    <div class="logo"><div class="mark">P</div>SmartPark</div>
+    <nav class="tabsnav"><button class="on" data-tab="slots">Parking</button><button data-tab="wallet" class="hidden">Wallet</button><button data-tab="exit">Exit</button><button data-tab="history" class="hidden">History</button></nav>
+    <div class="who" id="who"></div>
+  </header>
+  <main>
+    <section id="tab-slots">
+      <div class="banner">
+        <div class="bn-text"><h2>Find your spot</h2><p>Pick a free slot, pay with a bKash or Nagad QR and park. Status updates live every few seconds.</p></div>
+        <div class="stickers"><div class="s-rate"><div><b>৳<span id="rateV">100</span></b><small>per 30 min</small></div></div><div class="s-qr">Pay by QR<br><span class="b">bKash</span> · <span class="n">Nagad</span></div><span class="s-live"><i></i>Live</span></div>
+      </div>
+      <div class="stats">
+        <div class="stat st-total"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></div><div><b id="nTotal">0</b><span>Total slots</span></div></div>
+        <div class="stat st-free"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg></div><div><b id="nFree">0</b><span>Free slots</span></div></div>
+        <div class="stat st-busy"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 16l1.4-4.6A2 2 0 0 1 8.3 10h7.4a2 2 0 0 1 1.9 1.4L19 16"/><path d="M4 16h16v3h-2.5v-1.5h-11V19H4z"/><circle cx="8" cy="13.5" r=".6"/><circle cx="16" cy="13.5" r=".6"/></svg></div><div><b id="nBusy">0</b><span>Booked slots</span></div></div>
+      </div>
+      <div class="occ"><div class="bar"><i id="occBar"></i></div><span id="occTxt">0% full</span></div>
+      <div class="pagehead">
+        <div><h2>Choose a slot</h2><p id="slotSub">Tap a free slot to book it.</p></div>
+        <div class="legend"><span><i style="background:var(--ok)"></i>Free</span><span><i style="background:var(--warn)"></i>Paying</span><span><i style="background:var(--rose)"></i>Booked</span></div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <section id="tab-wallet" class="hidden">
+      <div class="pagehead"><div><h2>Your wallet</h2><p>Recharge with bKash or Nagad, then pay for parking straight from your balance.</p></div></div>
+      <div class="glass walletcard">
+        <div class="wbal"><span>Available balance</span><b id="walBal">৳0</b></div>
+        <button class="btn gold" id="rechargeBtn">Recharge wallet</button>
+      </div>
+    </section>
+
+    <section id="tab-exit" class="hidden">
+      <div class="pagehead"><div><h2>Exit your vehicle</h2><p>Enter your slot number and the exit code from your ticket. Both must match.</p></div></div>
+      <div class="glass exitcard">
+        <div class="two">
+          <div class="fld"><label for="exitSlot">Slot number</label><input id="exitSlot" inputmode="numeric" maxlength="3" placeholder="9" autocomplete="off"></div>
+          <div class="fld"><label for="exitCode">Exit code</label><input id="exitCode" maxlength="12" placeholder="XXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+        </div>
+        <button class="btn gold" id="exitCheck">Verify booking</button>
+        <div class="err" id="exitErr"></div>
+        <div id="exitResult"></div>
+      </div>
+    </section>
+
+
+    <section id="tab-history" class="hidden">
+      <div class="pagehead"><div><h2>Parking history</h2><p id="histSub">Every entry, exit, slot and fine. Tap a vehicle number to see its details.</p></div></div>
+      <input class="hsearch" id="histSearch" placeholder="Search vehicle number…" autocomplete="off">
+      <div id="histList"></div>
+    </section>
+  </main>
+
+</div>
+
+<div class="modal hidden" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<button class="robo-fab" id="roboFab" aria-label="Open Robo assistant" title="Ask Robo">
+  <svg viewBox="0 0 48 48" aria-hidden="true">
+    <line x1="24" y1="6" x2="24" y2="12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="24" cy="5" r="2.6" fill="currentColor"/>
+    <rect x="8" y="12" width="32" height="26" rx="10" fill="currentColor" opacity=".18"/>
+    <rect x="8" y="12" width="32" height="26" rx="10" stroke="currentColor" stroke-width="2.4" fill="none"/>
+    <circle cx="18.5" cy="25" r="3.4" fill="currentColor"/><circle cx="29.5" cy="25" r="3.4" fill="currentColor"/>
+    <path d="M17 32.5q7 4.5 14 0" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<div class="robo-panel hidden" id="roboPanel">
+  <div class="robo-head">
+    <div class="robo-title">
+      <span class="robo-avatar"><svg viewBox="0 0 48 48" aria-hidden="true">
+        <line x1="24" y1="6" x2="24" y2="12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="24" cy="5" r="2.6" fill="currentColor"/>
+        <rect x="8" y="12" width="32" height="26" rx="10" fill="currentColor" opacity=".18"/>
+        <rect x="8" y="12" width="32" height="26" rx="10" stroke="currentColor" stroke-width="2.4" fill="none"/>
+        <circle cx="18.5" cy="25" r="3.4" fill="currentColor"/><circle cx="29.5" cy="25" r="3.4" fill="currentColor"/>
+        <path d="M17 32.5q7 4.5 14 0" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round"/>
+      </svg></span>
+      <div><b>Robo</b><small>Parking assistant</small></div>
+    </div>
+    <button class="x" id="roboClose" aria-label="Close">×</button>
+  </div>
+  <div class="robo-msgs" id="roboMsgs"></div>
+  <div class="robo-chips" id="roboChips">
+    <button type="button" class="chip" data-q="Nearest free slot">Nearest free slot</button>
+    <button type="button" class="chip" data-q="Cost for 90 minutes">Cost for 90 min</button>
+    <button type="button" class="chip" data-q="How do I recharge my wallet?">Recharge wallet?</button>
+    <button type="button" class="chip" data-q="How do I exit?">How to exit?</button>
+  </div>
+  <div class="robo-row"><input id="roboInput" placeholder="Ask Robo anything…" autocomplete="off"><button class="btn gold" id="roboSend">Send</button></div>
+</div>
+
+<script>
+/* ---------- state & helpers ---------- */
+const state={token:localStorage.getItem('sp_token'),user:null,slots:[],rate:100,offset:0,mine:[],onModalClose:null,gridSig:'',busy:false};
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const now=()=>Date.now()+state.offset;
+const pad=n=>String(n).padStart(2,'0');
+function fmt(ms){const t=Math.floor(Math.max(0,ms)/1000);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return h>0?`${h}:${pad(m)}:${pad(s)}`:`${pad(m)}:${pad(s)}`}
+const price=m=>m>0?Math.ceil(m/30)*state.rate:0;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(path,body,method){
+  const o={method:method||(body?'POST':'GET'),headers:{'Content-Type':'application/json'}};
+  if(state.token)o.headers['x-token']=state.token;
+  if(body)o.body=JSON.stringify(body);
+  const r=await fetch('/api'+path,o);
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){const e=new Error(j.error||'Something went wrong');e.status=r.status;e.data=j;throw e}
+  return j;
+}
+let toastT;
+function toast(msg,type){const t=$('#toast');t.textContent=msg;t.className='toast show '+(type||'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast',3400)}
+function loading(btn,on){btn.classList.toggle('loading',on)}
+
+
+/* ---------- AUTH UI ---------- */
+function showAuth(){
+  $('#app').classList.add('hidden');$('#auth').classList.remove('hidden');
+  ['lPhone','lPass','rName','rPhone','rPass','pPhone','pPass'].forEach(id=>{const el=$('#'+id);if(el)el.value=''});
+  switchAuth('login');
+}
+function switchAuth(which){
+  $('#authTabs').classList.toggle('reg',which==='register');
+  $$('#authTabs button').forEach(b=>b.classList.toggle('on',b.dataset.a===which));
+  $('#authTabs').classList.toggle('hidden',which==='reset');
+  ['fLogin','fReg','fReset'].forEach(id=>$('#'+id).classList.add('hidden'));
+  const f=$({login:'#fLogin',register:'#fReg',reset:'#fReset'}[which]);
+  f.classList.remove('hidden');f.style.animation='none';f.offsetHeight;f.style.animation='';
+}
+$$('#authTabs button').forEach(b=>b.onclick=()=>switchAuth(b.dataset.a));
+$('#goReset').onclick=()=>switchAuth('reset');
+$('#backLogin').onclick=()=>switchAuth('login');
+$$('.guestBtn').forEach(b=>b.onclick=()=>{state.token=null;state.user=null;localStorage.removeItem('sp_token');enterApp()});
+
+$('#fLogin').onsubmit=async e=>{
+  e.preventDefault();const b=$('#bLogin');loading(b,true);
+  try{const d=await api('/users/login',{phone:$('#lPhone').value.trim(),password:$('#lPass').value});
+    state.token=d.token;state.user=d.user;localStorage.setItem('sp_token',d.token);enterApp();
+  }catch(err){toast(err.message,'bad')}finally{loading(b,false)}
+};
+$('#fReg').onsubmit=async e=>{
+  e.preventDefault();const b=$('#bReg');loading(b,true);
+  try{const phone=$('#rPhone').value.trim(),password=$('#rPass').value;
+    await api('/users/register',{name:$('#rName').value,phone,password});
+    const d=await api('/users/login',{phone,password});
+    state.token=d.token;state.user=d.user;localStorage.setItem('sp_token',d.token);toast('Account created','ok');enterApp();
+  }catch(err){toast(err.message,'bad')}finally{loading(b,false)}
+};
+$('#fReset').onsubmit=async e=>{
+  e.preventDefault();const b=$('#bReset');loading(b,true);
+  try{const d=await api('/users/reset-password',{phone:$('#pPhone').value.trim(),newPassword:$('#pPass').value});
+    toast(d.message,'ok');switchAuth('login');
+  }catch(err){toast(err.message,'bad')}finally{loading(b,false)}
+};
+// 3D tilt on the login card
+(function(){const c=$('#authCard');
+  c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(900px) rotateY(${x*6}deg) rotateX(${-y*6}deg)`});
+  c.addEventListener('mouseleave',()=>c.style.transform='');
+})();
+
+/* ---------- APP shell ---------- */
+let pollT,tickT,histT;
+function enterApp(){
+  $('#auth').classList.add('hidden');$('#app').classList.remove('hidden');
+  const w=$('#who'),walletNav=$('.tabsnav [data-tab="wallet"]'),histNav=$('.tabsnav [data-tab="history"]');
+  histNav.classList.toggle('hidden',!state.user); // history is private: signed-in users only
+  if(state.user){
+    walletNav.classList.remove('hidden');
+    w.innerHTML=`<span class="wbadge">৳${state.user.balance||0}</span><div class="av">${esc(state.user.name[0]||'U').toUpperCase()}</div><span class="name">${esc(state.user.name)}</span><button class="btn ghost" id="logout">Sign out</button>`;
+    $('#logout').onclick=logout;
+  }else{
+    walletNav.classList.add('hidden');
+    w.innerHTML=`<span class="name" style="color:var(--muted)">Guest</span><button class="btn gold" id="toSign">Sign in</button>`;$('#toSign').onclick=showAuth;
+  }
+  setTab('slots');refreshAll();updateWalletUI();
+  clearInterval(pollT);clearInterval(tickT);
+  pollT=setInterval(refreshAll,3000);tickT=setInterval(tick,1000);
+  clearInterval(histT);histT=setInterval(()=>{if(state.user&&!$('#tab-history').classList.contains('hidden')&&$('#modal').classList.contains('hidden'))loadHistory()},8000);
+}
+async function logout(){try{await api('/users/logout',{})}catch{}state.token=null;state.user=null;state.mine=[];localStorage.removeItem('sp_token');clearInterval(pollT);showAuth()}
+function setTab(t){
+  $$('nav.tabsnav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  $('#tab-slots').classList.toggle('hidden',t!=='slots');
+  $('#tab-wallet').classList.toggle('hidden',t!=='wallet');
+  $('#tab-exit').classList.toggle('hidden',t!=='exit');
+  $('#tab-history').classList.toggle('hidden',t!=='history');
+  if(t==='wallet')updateWalletUI();
+  if(t==='history')loadHistory();
+
+}
+function updateWalletUI(){
+  const bal=state.user?(state.user.balance||0):0;
+  if($('#walBal'))$('#walBal').textContent='৳'+bal;
+  const badge=$('.wbadge');if(badge)badge.textContent='৳'+bal;
+}
+$$('nav.tabsnav button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+
+async function refreshAll(){
+  if(state.busy)return;state.busy=true;
+  try{const d=await api('/slots');state.offset=d.now-Date.now();state.rate=d.ratePer30Min;state.slots=d.slots;renderSlots()}
+  catch{}finally{state.busy=false;tick()}
+}
+
+/* ---------- slots ---------- */
+const CAR='<svg viewBox="0 0 24 24"><path d="M5 16l1.4-4.6A2 2 0 0 1 8.3 10h7.4a2 2 0 0 1 1.9 1.4L19 16"/><path d="M4 16h16v3h-2.5v-1.5h-11V19H4z"/><circle cx="8" cy="13.5" r=".6"/><circle cx="16" cy="13.5" r=".6"/></svg>';
+function countTo(el,to){
+  if(el.dataset.v!==undefined&&+el.dataset.v===to)return;
+  const from=+el.dataset.v||0;el.dataset.v=to;const t0=performance.now();
+  (function step(t){const k=Math.min(1,(t-t0)/700);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(step)})(t0);
+}
+function renderSlots(){
+  const sig=JSON.stringify(state.slots);if(sig===state.gridSig)return;state.gridSig=sig;
+  $('#grid').innerHTML=state.slots.map(s=>{
+    const label={free:'Available',held:'Payment in progress',occupied:'Booked'}[s.status];
+    const ico=s.status==='occupied'?CAR:(s.status==='held'?'৳':'P');
+    return `<button class="slot ${s.status}" data-id="${s.id}" aria-label="Slot ${s.id}, ${label}"><span class="ico">${ico}</span><span class="num">${s.id}</span><span class="st">${label}</span>${s.status==='occupied'?`<span class="tmr" data-exp="${s.expiryTime}"></span>`:''}</button>`}).join('');
+  const total=state.slots.length,free=state.slots.filter(s=>s.status==='free').length,busy=state.slots.filter(s=>s.status==='occupied').length,held=total-free-busy;
+  countTo($('#nTotal'),total);countTo($('#nFree'),free);countTo($('#nBusy'),busy);
+  const pct=total?Math.round((busy+held)/total*100):0;
+  $('#occBar').style.width=pct+'%';$('#occTxt').textContent=`${pct}% full`+(held?` · ${held} paying now`:'');
+  $('#rateV').textContent=state.rate;
+  $('#slotSub').textContent=`${free} free of ${total} · ৳${state.rate} per 30 minutes`;
+}
+$('#grid').onclick=e=>{
+  const b=e.target.closest('.slot');if(!b)return;const s=state.slots.find(x=>x.id===+b.dataset.id);
+  if(s.status==='free')openBooking(s.id);
+  else if(s.status==='held')toast('Another driver is paying for this slot','bad');
+  else toast('This slot is already booked');
+};
+
+/* live timers + live fine */
+function tick(){
+  const n=now();
+  $$('[data-exp]').forEach(el=>{
+    const left=(+el.dataset.exp)-n;
+    if(el.dataset.kind==='fine'){
+      const over=Math.max(0,-left);const fine=Math.ceil(over/1800000)*state.rate;const due=Math.max(0,fine-(+el.dataset.paid||0));
+      if(due>0){el.textContent=`Fine due ৳${due}`;el.classList.add('has');el.classList.remove('none')}
+      else{el.textContent=el.dataset.plain?'No fine':'';el.classList.remove('has');el.classList.toggle('none',!!el.dataset.plain)}
+    }else if(left>0){el.textContent=fmt(left)+' left';el.classList.remove('over')}
+    else{el.textContent='+'+fmt(-left)+' overtime';el.classList.add('over')}
+  });
+}
+
+/* ---------- MODAL ---------- */
+function openModal(html,wide){const sh=$('#sheet');sh.className='sheet'+(wide?' wide':'');sh.innerHTML=html;$('#modal').classList.remove('hidden')}
+function closeModal(){
+  const cb=state.onModalClose;state.onModalClose=null;if(cb)cb();
+  $('#modal').classList.add('hidden');$('#sheet').innerHTML='';
+}
+document.addEventListener('click',e=>{if(e.target.closest('[data-close]'))closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').classList.contains('hidden'))closeModal()});
+
+const methodHtml=(allowWallet=true)=>{
+  const showWallet=allowWallet&&!!state.user;
+  return `<label class="l">Pay with</label><div class="methods ${showWallet?'m3':''}" id="methods">
+  <button type="button" class="mcd on" data-m="bkash">bKash<small>Scan with bKash app</small></button>
+  <button type="button" class="mcd" data-m="nagad">Nagad<small>Scan with Nagad app</small></button>
+  ${showWallet?`<button type="button" class="mcd" data-m="wallet">Wallet<small>Balance ৳${state.user.balance||0}</small></button>`:''}</div>`;
+};
+const vehicleHtml=()=>`<label class="l">Vehicle number</label>
+  <input class="plain" id="veh" maxlength="25" placeholder="e.g. DHAKA METRO-GA 12-3456" autocomplete="off" value="${esc(localStorage.getItem('sp_veh')||'')}">
+  <div class="hint">Required. It is linked to this booking.</div>`;
+
+/* ---------- guest ownership: a guest booking can only be exited from the browser that made it ---------- */
+const gkeys=()=>{try{return JSON.parse(localStorage.getItem('sp_gk')||'{}')}catch{return{}}};
+const gkGet=id=>gkeys()[id]||'';
+const gkSet=(id,k)=>{const m=gkeys();m[id]=k;localStorage.setItem('sp_gk',JSON.stringify(m))};
+const gkDel=id=>{const m=gkeys();delete m[id];localStorage.setItem('sp_gk',JSON.stringify(m))};
+function bindMethods(){$$('#methods .mcd').forEach(b=>b.onclick=()=>{$$('#methods .mcd').forEach(x=>x.classList.remove('on'));b.classList.add('on')})}
+const pickedMethod=()=>$('#methods .mcd.on').dataset.m;
+
+/* ---------- BOOKING ---------- */
+function openBooking(slotId){
+  let dur=60;
+  const chips=[[30,'30 min'],[60,'1 hr'],[90,'1.5 hr'],[120,'2 hr'],[180,'3 hr']];
+  openModal(`<button class="x" data-close aria-label="Close">×</button>
+    <h3>Book slot ${slotId}</h3><div class="hint">Your timer starts when the payment is complete.</div>
+    <label class="l">Parking duration</label>
+    <div class="chips" id="chips">${chips.map(([m,l])=>`<button type="button" class="chip ${m===60?'on':''}" data-m="${m}">${l}</button>`).join('')}</div>
+    <input class="plain" id="custom" type="number" min="1" max="1440" placeholder="Or type custom minutes">
+    <div class="total"><span>Total to pay</span><b id="tot">৳${price(dur)}</b></div>
+    ${vehicleHtml()}${methodHtml()}
+    <button class="btn gold" id="go">Generate payment QR</button>
+    <div class="err" id="merr"></div>`);
+  bindMethods();
+  const upd=()=>{$('#tot').textContent='৳'+price(dur)};
+  $$('#chips .chip').forEach(c=>c.onclick=()=>{$$('#chips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');dur=+c.dataset.m;$('#custom').value='';upd()});
+  $('#custom').oninput=e=>{const v=Math.floor(+e.target.value);if(v>0){dur=v;$$('#chips .chip').forEach(x=>x.classList.remove('on'));upd()}};
+  $('#go').onclick=async()=>{
+    const method=pickedMethod();
+    const vehicleNo=$('#veh').value.trim();
+    if(!(dur>=1&&dur<=1440))return $('#merr').textContent='Enter a duration between 1 and 1440 minutes';
+    if(vehicleNo.length<4)return $('#merr').textContent='Enter your vehicle number';
+    if(method==='wallet'&&(state.user.balance||0)<price(dur))return $('#merr').textContent='Insufficient wallet balance. Please recharge your wallet.';
+    localStorage.setItem('sp_veh',vehicleNo);const b=$('#go');loading(b,true);
+    try{
+      const p=await api('/payments/create',{purpose:'book',slotId,durationMin:dur,method,vehicleNo});
+      state.offset=p.now-Date.now();
+      if(method==='wallet')payFromWallet(p,showTicket,b);
+      else showQR(p,showTicket);
+    }catch(err){$('#merr').textContent=err.message;loading(b,false)}
+  };
+}
+
+/* ---------- INSTANT WALLET PAYMENT (no QR — internal balance transfer) ---------- */
+function payFromWallet(p,onPaid,btn){
+  $('#sheet').innerHTML=`<div class="center"><div class="spin"></div><h3>Paying from wallet</h3><p class="note" style="margin-top:8px">Deducting ৳${p.amount} from your balance…</p></div>`;
+  const t0=Date.now();
+  (async()=>{
+    try{
+      const r=await api(`/payments/${p.paymentId}/confirm`,{});
+      await sleep(Math.max(0,900-(Date.now()-t0)));
+      if(r.balance!==undefined){state.user.balance=r.balance;updateWalletUI()}
+      onPaid(r);
+    }catch(err){
+      closeModal();if(btn)loading(btn,false);toast(err.message,'bad');
+      if(/expired|taken|reserved|no longer/i.test(err.message))refreshAll();
+    }
+  })();
+}
+
+/* ---------- QR PAYMENT (shared by booking & fine) ---------- */
+function showQR(p,onPaid){
+  const isB=p.method==='bkash';const name=isB?'bKash':'Nagad';const col=isB?'#e2136e':'#f6921e';
+  openModal(`<button class="x" data-close aria-label="Cancel payment">×</button>
+    <div class="qrhead"><h3>Scan &amp; pay</h3><span class="badge" style="--mc:${col}">${name}</span></div>
+    <div class="qrbox" style="--mc:${col}"><div class="qrc" id="qr"></div><i class="corner a"></i><i class="corner b"></i><i class="corner c"></i><i class="corner d"></i><span class="scanline"></span></div>
+    <div class="qrmeta">
+      <div><span>Amount</span><b class="amt">৳${p.amount}</b></div>
+      <div><span>Send to</span><b>${esc(p.merchant)}</b></div>
+      <div><span>Reference</span><b>${esc(p.reference)}</b></div>
+      ${p.reference!==p.paymentId.toUpperCase()?`<div><span>Payment ID</span><b>${esc(p.paymentId.toUpperCase())}</b></div>`:''}</div>
+    <div class="hint center">Open ${name}, scan this QR and enter <b>${esc(p.reference)}</b> as the reference.</div>
+    <div class="timer">QR expires in <b id="qrT"></b></div>
+    <button class="btn gold" id="paid">I have completed the payment</button>
+    <div class="demo">Demo mode — no real money is moved.</div>`);
+  try{new QRCode($('#qr'),{text:p.qrPayload,width:208,height:208,colorDark:'#15112e',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}
+  catch{$('#qr').innerHTML=`<div style="color:#111;font-size:11px;word-break:break-all">${esc(p.qrPayload)}</div>`}
+
+  let done=false;
+  const clock=setInterval(()=>{
+    const left=p.expiresAt-now();
+    if(left<=0&&!done){clearInterval(clock);state.onModalClose=null;
+      openModal(`<button class="x" data-close>×</button><div class="center"><h3 style="margin-top:20px">QR expired</h3><p class="note" style="margin:10px 0 0">For your security the QR is valid for 5 minutes only. Start again to get a new one.</p><button class="btn gold" data-close>Close</button></div>`)}
+    else{const t=$('#qrT');if(t)t.textContent=fmt(left)}
+  },1000);
+  $('#qrT').textContent=fmt(p.expiresAt-now());
+  state.onModalClose=()=>{clearInterval(clock);if(!done)api(`/payments/${p.paymentId}/cancel`,{}).catch(()=>{})};
+
+  $('#paid').onclick=async()=>{
+    done=true;clearInterval(clock);
+    $('#sheet').innerHTML=`<div class="center" style="--mc:${col}"><div class="spin"></div><h3>Verifying payment</h3><p class="note" style="margin-top:8px">Checking ${name} for ৳${p.amount}…</p></div>`;
+    const t0=Date.now();
+    try{
+      const r=await api(`/payments/${p.paymentId}/confirm`,{});
+      await sleep(Math.max(0,2200-(Date.now()-t0)));
+      $('#sheet').innerHTML=`<div class="center"><svg class="tick" viewBox="0 0 84 84"><circle cx="42" cy="42" r="30"/><path d="M28 43l10 10 19-21"/></svg><h3>Payment received</h3><p class="note" style="margin-top:6px">৳${r.amount} via ${name} · ${esc(r.trxId)}</p></div>`;
+      await sleep(1300);state.onModalClose=null;onPaid(r);
+    }catch(err){
+      await sleep(Math.max(0,1200-(Date.now()-t0)));
+      state.onModalClose=null;toast(err.message,'bad');
+      if(/expired|taken|reserved|no longer/i.test(err.message)){closeModal();refreshAll()}
+      else{done=false;showQR(p,onPaid)}
+    }
+  };
+}
+
+function showTicket(r){
+  state.offset=r.now-Date.now();
+  if(r.guestKey)gkSet(r.slotId,r.guestKey);
+  openModal(`<div class="center"><svg class="tick" viewBox="0 0 84 84"><circle cx="42" cy="42" r="30"/><path d="M28 43l10 10 19-21"/></svg>
+    <h3>Slot ${r.slotId} is yours</h3><p class="note" style="margin-top:4px">${esc(r.vehicleNo)} · paid ৳${r.amount}</p>
+    <div class="ticket"><small>Your exit code — keep it safe</small><code class="codebig">${esc(r.exitCode)}</code>
+      <button class="chip" id="copy">Copy code</button></div>
+    <div class="info"><div class="row"><span>Time</span><b class="tmr" data-exp="${r.expiryTime}"></b></div></div>
+    ${r.guestKey?'<p class="hint" style="margin-bottom:8px"><b>Guest booking:</b> only this device/browser can exit this car. Do not clear browser data. Sign in next time if you want it tied to an account.</p>':''}<p class="hint">After your time ends, overtime is fined ৳${state.rate} for every 30 minutes. Enter this code on the Exit page to leave.</p>
+    <button class="btn gold" data-close>Done</button></div>`);
+  $('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(r.exitCode);toast('Exit code copied','ok')}catch{toast('Copy failed — note it down')}};
+  tick();refreshAll();
+}
+
+/* ---------- WALLET RECHARGE ---------- */
+function openRecharge(){
+  let amt=200;
+  const chips=[[100,'৳100'],[200,'৳200'],[500,'৳500'],[1000,'৳1000']];
+  openModal(`<button class="x" data-close aria-label="Close">×</button>
+    <h3>Recharge wallet</h3><div class="hint">Add money to your SmartPark wallet using bKash or Nagad.</div>
+    <label class="l">Amount</label>
+    <div class="chips" id="rchips">${chips.map(([m,l])=>`<button type="button" class="chip ${m===200?'on':''}" data-m="${m}">${l}</button>`).join('')}</div>
+    <input class="plain" id="rcustom" type="number" min="50" max="100000" placeholder="Or type a custom amount">
+    <div class="total"><span>You will add</span><b id="rtot">৳${amt}</b></div>
+    ${methodHtml(false)}
+    <button class="btn gold" id="rgo">Generate payment QR</button>
+    <div class="err" id="rerr"></div>`);
+  bindMethods();
+  const upd=()=>{$('#rtot').textContent='৳'+amt};
+  $$('#rchips .chip').forEach(c=>c.onclick=()=>{$$('#rchips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');amt=+c.dataset.m;$('#rcustom').value='';upd()});
+  $('#rcustom').oninput=e=>{const v=Math.floor(+e.target.value);if(v>0){amt=v;$$('#rchips .chip').forEach(x=>x.classList.remove('on'));upd()}};
+  $('#rgo').onclick=async()=>{
+    if(!(amt>=50&&amt<=100000))return $('#rerr').textContent='Enter an amount between ৳50 and ৳100000';
+    const b=$('#rgo');loading(b,true);
+    try{const p=await api('/payments/create',{purpose:'recharge',method:pickedMethod(),amount:amt});
+      state.offset=p.now-Date.now();showQR(p,onRecharged);
+    }catch(err){$('#rerr').textContent=err.message;loading(b,false)}
+  };
+}
+function onRecharged(r){
+  state.user.balance=r.balance;updateWalletUI();
+  openModal(`<div class="center"><svg class="tick" viewBox="0 0 84 84"><circle cx="42" cy="42" r="30"/><path d="M28 43l10 10 19-21"/></svg>
+    <h3>Payment successful</h3><p class="note" style="margin-top:6px">৳${r.amount} added to your wallet via ${r.method==='bkash'?'bKash':'Nagad'}.</p>
+    <div class="ticket"><small>New wallet balance</small><code class="codebig">৳${r.balance}</code></div>
+    <button class="btn gold" data-close>Done</button></div>`);
+}
+$('#rechargeBtn').onclick=openRecharge;
+
+/* ---------- EXIT (slot number + exit code must match) ---------- */
+state.exit=null;
+$('#exitCheck').onclick=()=>checkCode();
+['exitSlot','exitCode'].forEach(id=>$('#'+id).onkeydown=e=>{if(e.key==='Enter')checkCode()});
+async function checkCode(){
+  const slotId=parseInt($('#exitSlot').value,10),code=$('#exitCode').value.trim().toUpperCase();
+  $('#exitErr').textContent='';$('#exitResult').innerHTML='';state.exit=null;
+  if(!(slotId>0))return $('#exitErr').textContent='Enter your slot number';
+  if(!code)return $('#exitErr').textContent='Enter your exit code';
+  const b=$('#exitCheck');loading(b,true);
+  try{
+    const i=await api('/exit/check',{slotId,code,guestKey:gkGet(slotId)});state.offset=i.now-Date.now();state.exit={slotId,code,guestKey:gkGet(slotId)};
+    $('#exitResult').innerHTML=`<div class="info">
+      <div class="row"><span>Slot</span><b>#${i.slotId}</b></div>
+      ${i.vehicleNo?`<div class="row"><span>Vehicle</span><b>${esc(i.vehicleNo)}</b></div>`:''}
+      <div class="row"><span>Parked at</span><b>${new Date(i.entryTime).toLocaleString([], {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</b></div>
+      <div class="row"><span>Booked for</span><b>${i.durationMin} min</b></div>
+      <div class="row"><span>Time</span><b class="tmr" data-exp="${i.expiryTime}"></b></div>
+      <div class="row"><span>Fine</span><b class="fine" data-kind="fine" data-plain="1" data-exp="${i.expiryTime}" data-paid="${i.finePaid}"></b></div>
+      <div class="slide" id="slide"><div class="slide-fill"></div><span class="slide-label" id="slideLbl">Slide to open the gate</span>
+        <button type="button" class="knob" id="knob" aria-label="Slide right to exit (or press Enter)"><svg viewBox="0 0 24 24"><path d="M6 6l6 6-6 6"/><path d="M12 6l6 6-6 6"/></svg></button></div>
+      <div class="hint center" style="margin-top:10px">Any fine must be paid before the gate opens.</div></div>`;
+    tick();initSlide();
+  }catch(err){$('#exitErr').textContent=err.message}finally{loading(b,false)}
+}
+
+function initSlide(){
+  const s=$('#slide'),k=$('#knob'),f=$('.slide-fill',s),lbl=$('#slideLbl');
+  let drag=false,off=0,x=0,busy=false;
+  const max=()=>s.clientWidth-k.offsetWidth-8;
+  const set=v=>{x=Math.max(0,Math.min(v,max()));k.style.transform=`translateX(${x}px)`;f.style.width=(x+k.offsetWidth+4)+'px'};
+  const fire=async()=>{
+    if(busy)return;busy=true;set(max());s.classList.add('done');lbl.textContent='Checking…';
+    const ok=await tryExit();
+    if(!ok&&document.body.contains(s)){busy=false;s.classList.remove('done');lbl.textContent='Slide to open the gate';set(0)}
+  };
+  k.addEventListener('pointerdown',e=>{if(busy)return;drag=true;off=e.clientX-x;k.setPointerCapture(e.pointerId);s.classList.add('drag')});
+  k.addEventListener('pointermove',e=>{if(drag)set(e.clientX-off)});
+  const end=()=>{if(!drag)return;drag=false;s.classList.remove('drag');x>=max()*.88?fire():set(0)};
+  k.addEventListener('pointerup',end);k.addEventListener('pointercancel',end);
+  k.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fire()}});
+}
+
+async function tryExit(){
+  const {slotId,code}=state.exit;
+  try{
+    const f=await api('/exit/check',{slotId,code,guestKey:state.exit.guestKey});state.offset=f.now-Date.now();
+    if(f.due>0){openFine(f);return false}
+    await doExit();return true;
+  }catch(err){toast(err.message,'bad');return false}
+}
+
+function openFine(f){
+  openModal(`<button class="x" data-close aria-label="Close">×</button>
+    <h3>Overtime fine</h3><div class="hint">You stayed ${fmt(f.overtimeMs)} past your booked time on slot ${f.slotId}.</div>
+    <div class="total"><span>Fine to pay</span><b>৳${f.due}</b></div>
+    ${methodHtml()}
+    <button class="btn gold" id="go">Generate payment QR</button><div class="err" id="merr"></div>`);
+  bindMethods();
+  $('#go').onclick=async()=>{
+    const method=pickedMethod();
+    if(method==='wallet'&&(state.user.balance||0)<f.due)return $('#merr').textContent='Insufficient wallet balance. Please recharge your wallet.';
+    const b=$('#go');loading(b,true);
+    try{const p=await api('/payments/create',{purpose:'fine',slotId:f.slotId,code:state.exit.code,guestKey:state.exit.guestKey,method});
+      state.offset=p.now-Date.now();
+      if(method==='wallet')payFromWallet(p,()=>doExit(),b);
+      else showQR(p,()=>doExit());
+    }catch(err){$('#merr').textContent=err.message;loading(b,false)}
+  };
+}
+
+async function doExit(){
+  const {slotId,code}=state.exit;
+  try{
+    const r=await api('/exit/complete',{slotId,code,guestKey:state.exit.guestKey});
+    openModal(`<div class="center"><div class="gate"><div class="post"></div><div class="arm"></div></div>
+      <h3>Exit granted</h3><p class="note" style="margin-top:6px">Slot ${r.slotId} is free again. You parked for ${r.elapsedMinutes} min.</p>
+      <button class="btn gold" data-close>Drive safe</button></div>`);
+    gkDel(slotId);state.exit=null;$('#exitSlot').value='';$('#exitCode').value='';$('#exitResult').innerHTML='';refreshAll();
+  }catch(err){
+    closeModal();toast(err.message,'bad');
+    if(err.status===402)checkCode();
+  }
+}
+
+/* ---------- PARKING HISTORY ---------- */
+state.hist={records:[],scope:'own'};
+const sq=v=>String(v||'').replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)).toUpperCase().replace(/[\s-]/g,'');
+const dt=t=>t?new Date(t).toLocaleString([], {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+const dm=m=>{m=Math.max(0,Math.round(m||0));if(!m)return'under 1 min';const h=Math.floor(m/60);return h?`${h}h ${m%60}m`:`${m} min`};
+async function loadHistory(){
+  try{const d=await api('/history');state.hist=d;state.offset=d.now-Date.now();renderHistory()}
+  catch(e){$('#histList').innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+function carsFromHistory(){
+  const q=sq($('#histSearch').value),map=new Map();
+  for(const r of state.hist.records){
+    const k=sq(r.vehicleNo);if(!k||(q&&!k.includes(q)))continue;
+    if(!map.has(k))map.set(k,{key:k,vehicleNo:r.vehicleNo,visits:[]});
+    map.get(k).visits.push(r);
+  }
+  return [...map.values()].sort((a,b)=>b.visits[0].entryTime-a.visits[0].entryTime);
+}
+function renderHistory(){
+  const own=state.hist.scope==='own';
+  $('#histSub').textContent=own?'Your vehicles only. Tap a vehicle number to see every visit, time, slot and fine.':'Administrator view: all vehicles. Tap a vehicle number to see every visit, time, slot and fine.';
+  const cars=carsFromHistory();
+  if(!cars.length){$('#histList').innerHTML=`<div class="empty">${state.hist.records.length?'No vehicle matches your search.':'No parking history yet. It appears here after the first booking.'}</div>`;return}
+  $('#histList').innerHTML=`<div class="hlist">`+cars.map(c=>{
+    const last=c.visits[0],inside=c.visits.some(v=>v.status==='parked'),fines=c.visits.reduce((a,v)=>a+(v.fineTotal||0),0);
+    return `<button type="button" class="hcar" data-k="${esc(c.key)}"><span class="plate">${esc(c.vehicleNo)}</span>
+      <span><span class="pill2 ${inside?'in':'out'}">${inside?'Parked now':'Exited'}</span>${fines>0?`<span class="pill2 fine">Fine ৳${fines}</span>`:''}</span>
+      <span class="meta"><span>Visits <b>${c.visits.length}</b></span><span>Last entry <b>${esc(dt(last.entryTime))}</b></span></span></button>`}).join('')+`</div>`;
+}
+$('#histSearch').oninput=renderHistory;
+$('#histList').onclick=e=>{const b=e.target.closest('.hcar');if(b)openVehicle(b.dataset.k)};
+function openVehicle(key){
+  const c=carsFromHistory().find(x=>x.key===key)||{vehicleNo:key,visits:state.hist.records.filter(r=>sq(r.vehicleNo)===key)};
+  if(!c.visits.length)return;
+  const n=now(),fines=c.visits.reduce((a,v)=>a+(v.fineTotal||0),0);
+  openModal(`<button class="x" data-close aria-label="Close">×</button>
+    <h3 style="font-family:ui-monospace,Consolas,monospace;letter-spacing:1px;color:var(--gold);padding-right:36px;word-break:break-word">${esc(c.vehicleNo)}</h3>
+    <div class="hint">${c.visits.length} visit(s) · total extra fines ৳${fines}</div>`+
+    c.visits.map(v=>{
+      const inside=v.status==='parked';
+      const parked=inside?dm((n-v.entryTime)/60000):dm(v.parkedMin);
+      return `<div class="visit"><div class="vh"><b>Slot ${v.slotId}</b><span class="pill2 ${inside?'in':'out'}">${inside?'Parked now':'Exited'}</span></div>
+        <div class="row"><span>Entry</span><b>${esc(dt(v.entryTime))}</b></div>
+        <div class="row"><span>Exit</span><b>${inside?'Still parked':esc(dt(v.exitTime))}</b></div>
+        <div class="row"><span>Time parked</span><b>${esc(parked)}</b></div>
+        <div class="row"><span>Booked for</span><b>${dm(v.bookedMin)} (until ${esc(dt(v.expiryTime))})</b></div>
+        <div class="row"><span>Booking paid</span><b>৳${v.bookingAmount} via ${esc(v.bookingMethod)}</b></div>
+        <div class="row"><span>Overtime</span><b class="${v.overtimeMin>0?'bad':''}">${v.overtimeMin>0?dm(v.overtimeMin):'None'}</b></div>
+        <div class="row"><span>Extra fine</span><b class="${v.fineTotal>0?'bad':'ok'}">${v.fineTotal>0?`৳${v.fineTotal} (paid ৳${v.finePaid||0}${v.fineDue>0?`, due ৳${v.fineDue}`:''})`:'None'}</b></div>
+        <div class="tl">${(v.events||[]).slice().sort((x,y)=>x.at-y.at).map(ev=>`<div><b>${esc(dt(ev.at))}</b> · ${esc(ev.text)}</div>`).join('')}</div></div>`}).join('')
+    +`<button class="btn ghost" data-close>Close</button>`,true);
+}
+
+/* ---------- ROBO ASSISTANT (answers only about this parking system; asks the server) ---------- */
+(function(){
+  const fab=$('#roboFab'),panel=$('#roboPanel'),msgs=$('#roboMsgs'),input=$('#roboInput'),sendBtn=$('#roboSend'),closeBtn=$('#roboClose'),chips=$('#roboChips');
+  let greeted=false,busy=false;const hist=[];
+  function addMsg(text,cls){
+    const d=document.createElement('div');d.className='robo-msg '+cls;d.textContent=text;
+    msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;
+  }
+  function openPanel(){
+    panel.classList.remove('hidden');
+    if(!greeted){greeted=true;addMsg("Hi, I'm Robo 🤖. I answer questions about this parking system only: free and nearest slots, prices, booking, payment, fines, exit and history.",'bot')}
+    input.focus();
+  }
+  fab.onclick=()=>panel.classList.contains('hidden')?openPanel():panel.classList.add('hidden');
+  closeBtn.onclick=()=>panel.classList.add('hidden');
+  chips.onclick=e=>{const b=e.target.closest('[data-q]');if(b)ask(b.dataset.q)};
+  sendBtn.onclick=()=>ask(input.value);
+  input.onkeydown=e=>{if(e.key==='Enter')ask(input.value)};
+  async function ask(q){
+    q=(q||'').trim();if(!q||busy)return;busy=true;sendBtn.classList.add('loading');
+    addMsg(q,'user');input.value='';
+    const th=addMsg('Robo is thinking…','bot think');
+    try{
+      const d=await api('/assistant',{message:q,history:hist.slice(-8)});
+      th.textContent=d.reply;hist.push({role:'user',content:q},{role:'assistant',content:d.reply});
+    }catch(e){th.textContent=e.message||'Robo is unavailable right now. Please try again.'}
+    th.classList.remove('think');busy=false;sendBtn.classList.remove('loading');msgs.scrollTop=msgs.scrollHeight;
+  }
+})();
+
+/* ---------- init ---------- */
+(async function(){
+  if(state.token){
+    try{const d=await api('/users/me');state.user=d.user;enterApp();return}
+    catch{state.token=null;localStorage.removeItem('sp_token')}
+  }
+  showAuth();
+})();
+</script>
+</body>
+</html>
